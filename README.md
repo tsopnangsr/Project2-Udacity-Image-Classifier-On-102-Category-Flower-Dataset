@@ -54,6 +54,8 @@ or
 
 - Clone the repository use: `git clone https://github.com/tsopnangsr/Project2-Udacity-Image-Classifier-On-102-Category-Flower-Dataset.git`
 
+## DEMO example with Python Scripts
+![Scripts Classification](/assets/udacity_ai_train_predict_8_script.png)
+
 ## DEMO example on Jupyter notebook
-*Note (They are also script version to run with Python)*
-![Classification](/assets/udacity_ai_result_image_classifier.png)
+![Jupyter Classification](/assets/udacity_ai_result_image_classifier.png)
