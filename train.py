@@ -29,34 +29,45 @@ valid_dir = data_dir + '/valid'
 test_dir = data_dir + '/test'
 
 # TODO: Define your transforms for the training, validation, and testing sets
-transforms_training = transforms.Compose([transforms.RandomRotation(30),
-                                       transforms.RandomResizedCrop(224),
+train_transforms = transforms.Compose([transforms.RandomRotation(30),
+                                       transforms.RandomResizedCrop(224, scale=(0.08, 1.0), ratio=(0.75, 1.3333333333333333)),
                                        transforms.RandomHorizontalFlip(),
                                        transforms.ToTensor(),
                                        transforms.Normalize([0.485, 0.456, 0.406],
                                                             [0.229, 0.224, 0.225])])
-
-transforms_validation = transforms.Compose([transforms.Resize(256),
-                                      transforms.CenterCrop(224),
-                                      transforms.ToTensor(),
-                                      transforms.Normalize([0.485, 0.456, 0.406],
+valid_transforms = transforms.Compose([transforms.Resize(255),
+                                       transforms.CenterCrop(224),
+                                       transforms.ToTensor(),
+                                       transforms.Normalize([0.485, 0.456, 0.406],
+                                                           [0.229, 0.224, 0.225])])
+test_transforms  = transforms.Compose([transforms.Resize(255),
+                                       transforms.CenterCrop(224),
+                                       transforms.ToTensor(),
+                                       transforms.Normalize([0.485, 0.456, 0.406],
                                                            [0.229, 0.224, 0.225])])
 
-transforms_testing = transforms.Compose([transforms.Resize(256),
-                                      transforms.CenterCrop(224),
-                                      transforms.ToTensor(),
-                                      transforms.Normalize([0.485, 0.456, 0.406],
-                                                           [0.229, 0.224, 0.225])])
+
 
 # TODO: Load the datasets with ImageFolder
-train_data = datasets.ImageFolder(train_dir, transform=transforms_training)
-validate_data = datasets.ImageFolder(valid_dir, transform=transforms_validation)
-test_data = datasets.ImageFolder(test_dir, transform=transforms_testing)
+image_datasets = dict()
+train_datasets = datasets.ImageFolder(train_dir, transform=train_transforms)
+valid_datasets = datasets.ImageFolder(valid_dir, transform=valid_transforms)
+test_datasets = datasets.ImageFolder(test_dir, transform=test_transforms)
+
+image_datasets['train'] = train_datasets
+image_datasets['valid'] = valid_datasets
+image_datasets['test'] = test_datasets
+
 
 # TODO: Using the image datasets and the trainforms, define the dataloaders
-train_loader = torch.utils.data.DataLoader(train_data, batch_size=64, shuffle=True)
-validation_loader = torch.utils.data.DataLoader(validate_data, batch_size=32)
-test_loader = torch.utils.data.DataLoader(test_data, batch_size=32)
+dataloaders = dict()
+train_loader = torch.utils.data.DataLoader(image_datasets['train'], batch_size=batch_size, shuffle=True)
+validation_loader = torch.utils.data.DataLoader(image_datasets['valid'], batch_size=batch_size)
+test_loader = torch.utils.data.DataLoader(image_datasets['test'], batch_size=batch_size)
+
+dataloaders['train'] = train_dataloaders
+dataloaders['valid'] = valid_dataloaders
+dataloaders['test']  = test_dataloaders
 
 # TODO: Build the model
 model = models.vgg19(pretrained=True)
@@ -162,7 +173,7 @@ with torch.no_grad():
 print('Accuracy of the network: {}' .format(valid / total))
 
 # TODO: Save the checkpoint
-model.class_to_idx = train_data.class_to_idx
+model.class_to_idx = train_datasets.class_to_idx
 
 check_point = {'arch':args.arch,
               'input':num_features,
