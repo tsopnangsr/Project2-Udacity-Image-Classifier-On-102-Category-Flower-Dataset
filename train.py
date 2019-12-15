@@ -1,3 +1,5 @@
+#python train.py --data_dir dir_path --gpu True --learning_rate 0.001
+
 # Imports here
 import numpy as np
 import torch
@@ -27,6 +29,10 @@ data_dir = args.data_dir
 train_dir = data_dir + '/train'
 valid_dir = data_dir + '/valid'
 test_dir = data_dir + '/test'
+
+nThreads = 4
+batch_size = 8
+use_gpu = torch.cuda.is_available()
 
 # TODO: Define your transforms for the training, validation, and testing sets
 train_transforms = transforms.Compose([transforms.RandomRotation(30),
@@ -61,9 +67,9 @@ image_datasets['test'] = test_datasets
 
 # TODO: Using the image datasets and the trainforms, define the dataloaders
 dataloaders = dict()
-train_loader = torch.utils.data.DataLoader(image_datasets['train'], batch_size=batch_size, shuffle=True)
-validation_loader = torch.utils.data.DataLoader(image_datasets['valid'], batch_size=batch_size)
-test_loader = torch.utils.data.DataLoader(image_datasets['test'], batch_size=batch_size)
+train_dataloaders = torch.utils.data.DataLoader(image_datasets['train'], batch_size=batch_size, shuffle=True)
+valid_dataloaders = torch.utils.data.DataLoader(image_datasets['valid'], batch_size=batch_size)
+test_dataloaders = torch.utils.data.DataLoader(image_datasets['test'], batch_size=batch_size)
 
 dataloaders['train'] = train_dataloaders
 dataloaders['valid'] = valid_dataloaders
@@ -109,7 +115,7 @@ model.to(device)
 for e in range(epochs):
     model.train()
 
-    for inputs, labels in iter(train_loader):
+    for inputs, labels in iter(train_dataloaders):
 
         inputs = Variable(inputs)
         targets = Variable(labels)
@@ -124,7 +130,7 @@ for e in range(epochs):
         loss.backward()
         optimizer.step()
 
-        train_loss += loss.data[0]
+        train_loss += loss.item()
 
         steps += 1
         if steps % batch== 0:
@@ -132,24 +138,25 @@ for e in range(epochs):
             accuracy = 0
             test_loss = 0
 
-            for i, (inputs, labels) in enumerate(validation_loader):
+            with torch.no_grad():
+                for i, (inputs, labels) in enumerate(valid_dataloaders):
 
-                inputs = Variable(inputs, volatile=True)
-                labels = Variable(labels, volatile=True)
+                    inputs = Variable(inputs)
+                    labels = Variable(labels)
 
-                inputs, labels = inputs.to(device), labels.to(device)
+                    inputs, labels = inputs.to(device), labels.to(device)
 
-                output = model.forward(inputs)
-                test_loss += criterion(output, labels).data[0]
+                    output = model.forward(inputs)
+                    test_loss += criterion(output, labels).item()
 
-                ps = torch.exp(output).data
-                equality = (labels.data == ps.max(1)[1])
-                accuracy += equality.type_as(torch.FloatTensor()).mean()
+                    ps = torch.exp(output).data
+                    equality = (labels.data == ps.max(1)[1])
+                    accuracy += equality.type_as(torch.FloatTensor()).mean()
 
             print("Epoch: {}/{}.. ".format(e+1, epochs),
                   "Training Loss: {:.3f}.. ".format(train_loss/batch),
-                  "Test Loss: {:.3f}.. ".format(test_loss/len(testloader)),
-                  "Test Accuracy: {:.3f}".format(accuracy/len(testloader)))
+                  "Test Loss: {:.3f}.. ".format(test_loss/len(test_dataloaders)),
+                  "Test Accuracy: {:.3f}".format(accuracy/len(test_dataloaders)))
 
             train_loss = 0
 

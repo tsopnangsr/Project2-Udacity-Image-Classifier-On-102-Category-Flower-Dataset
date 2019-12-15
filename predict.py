@@ -1,3 +1,5 @@
+#python predict.py --image 'flowers/test/2/image_05100.jpg' --check_point checkpoint.pth --gpu True
+
 import numpy as np
 import json
 import torch
@@ -63,7 +65,7 @@ def process_image(image):
 
     return torch.from_numpy(image)
 
-def predict(image_dir, model, top_k=5):
+def predict(image_dir, model, topk=5):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
     '''
 
@@ -83,7 +85,7 @@ def predict(image_dir, model, top_k=5):
         output = model.forward(image)
         ps = torch.exp(output)
 
-    prob, index = torch.topk(ps, top_k)
+    prob, index = torch.topk(ps, topk)
     pb = np.array(prob.data[0])
     Index = np.array(index.data[0])
 

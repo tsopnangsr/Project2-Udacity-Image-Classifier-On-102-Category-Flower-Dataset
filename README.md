@@ -41,11 +41,14 @@ Argument to be passed:
 * category to name : <code>--category_to_name</code>
 
 first run:  
+<code>python train.py --data_dir 'flowers' --gpu True --learning_rate 0.001</code>
+ou
 <code>python train.py --data_dir dir_path --gpu True --learning_rate 0.001</code>
 
 after successful training run:  
-<code>python predict.py --image image_name.jpg --checkpoint checkpoint.pth --gpy True</code>
-
+<code>python predict.py --image image_name.jpg --checkpoint check_point.pth --gpy True</code>
+or
+<code>python predict.py --image 'flowers/test/2/image_05100.jpg' --check_point checkpoint.pth --gpu True</code>
 
 # Basic Usage for command line
 
